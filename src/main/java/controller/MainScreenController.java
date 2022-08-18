@@ -33,11 +33,8 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import my.app.ims_v2.IMSApplication;
 import utils.SceneChanger;
+import utils.Utils;
 
-/**
- FXML Main Screen Controller class.
- @author Sean
- */
 public class MainScreenController implements Initializable {
 
     @FXML private TableView<Part> partsTableView;
@@ -47,9 +44,9 @@ public class MainScreenController implements Initializable {
     @FXML private TableColumn<Part, Double> partCostColumn;
 
     @FXML private TextField partsSearch;
-    @FXML private Button partsAddButton;
-    @FXML private Button partsModifyButton;
-    @FXML private Button partsDeleteButton;
+//    @FXML private Button partsAddButton;
+//    @FXML private Button partsModifyButton;
+//    @FXML private Button partsDeleteButton;
 
     @FXML private TableView<Product> productsTableView;
     @FXML private TableColumn<Product, Integer> productIdColumn;
@@ -58,9 +55,9 @@ public class MainScreenController implements Initializable {
     @FXML private TableColumn<Product, Double> productCostColumn;
 
     @FXML private TextField productsSearch;
-    @FXML private Button productsAddButton;
-    @FXML private Button productsModifyButton;
-    @FXML private Button productsDeleteButton;
+//    @FXML private Button productsAddButton;
+//    @FXML private Button productsModifyButton;
+//    @FXML private Button productsDeleteButton;
 
     @FXML private Label partsConfirmationText;
     @FXML private Label productsConfirmationText;
@@ -75,7 +72,7 @@ public class MainScreenController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        //set up the columns in each TableView (Parts, Products, respectively)
+        // set up the columns in each TableView (Parts, Products, respectively)
         partIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         partNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         partInventoryLevelColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
@@ -86,11 +83,11 @@ public class MainScreenController implements Initializable {
         productInventoryLevelColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
         productCostColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        //Implement partsSearch functionality
+        // Binds the Parts list, tableview, and searchbar together
         FilteredList<Part> filteredParts = new FilteredList<>(Inventory.getAllParts(), p -> true);
         partsSearchHandler(partsTableView, partsSearch, filteredParts);
 
-        //Implement productsSearch functionality
+        // Binds the Products list, tableview, and searchbar together
         FilteredList<Product> filteredProducts = new FilteredList<>(Inventory.getAllProducts(), p -> true);
         productsSearchHandler(productsTableView, productsSearch, filteredProducts);
 
@@ -102,9 +99,7 @@ public class MainScreenController implements Initializable {
      @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
     public void addPartButtonPushed(ActionEvent event) throws IOException {
-
         SceneChanger.changeSceneTo(event, "addPart.fxml");
-
     }
 
     /**
@@ -117,30 +112,29 @@ public class MainScreenController implements Initializable {
      @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
     public void modifyPartButtonPushed(ActionEvent event) throws IOException {
-
-        //check if a selection in the partsTableView has been made or not
+        // check if a selection in the partsTableView has been made or not
         if (!partsTableView.getSelectionModel().isEmpty()) {
-            //store the selected Part from the partsTableView in selectedPart
+            // store the selected Part from the partsTableView in selectedPart
             Part partToModify = partsTableView.getSelectionModel().getSelectedItem();
 
-            //determine subclass of partToModify, then create it for later use
+            // determine subclass of partToModify, then create it for later use
             if (partToModify instanceof InHousePart) {
-                ModifyPartController.selectedPart = (InHousePart) partToModify;
+                ModifyPartController.selectedPart = partToModify;
 
             } else if (partToModify instanceof OutsourcedPart) {
-                ModifyPartController.selectedPart = (OutsourcedPart) partToModify;
+                ModifyPartController.selectedPart = partToModify;
             }
 
-            //create FXMLLoader
+            // create FXMLLoader
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/view/modifyPart.fxml"));
+            loader.setLocation(IMSApplication.class.getResource("modifyPart.fxml"));
             Parent newScene = loader.load();
 
-            //access the controller from the loader and call method to pass data into fields
+            // access the controller from the loader and call method to pass data into fields
             ModifyPartController controller = loader.getController();
             controller.initializeFields();
 
-            //use part of changeSceneTo() method to switch scenes
+            // set and change scenes
             Scene scene = new Scene(newScene);
 
             // this line gets the stage information
@@ -152,7 +146,6 @@ public class MainScreenController implements Initializable {
         } else {
             partsConfirmationText.setText("Error: No Part selected.");
         }
-
     }
 
     /**
@@ -160,9 +153,8 @@ public class MainScreenController implements Initializable {
      If there is no selection made, the method creates a dialog box indicating this error.
      If a selection has been made, the user is prompted via dialog box for confirmation; the user may Cancel or Delete the selected Part.
      @param event the ActionEvent object representing the Delete button on the Parts pane being pushed.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
-    public void deletePartButtonPushed(ActionEvent event) throws IOException {
+    public void deletePartButtonPushed(ActionEvent event) {
         if (!partsTableView.getSelectionModel().isEmpty()) {
             Part partToDelete = partsTableView.getSelectionModel().getSelectedItem();
             String partName = partToDelete.getName();
@@ -191,7 +183,6 @@ public class MainScreenController implements Initializable {
             alert.setContentText("Please select a part to delete, then click Delete.");
             alert.showAndWait();
         }
-
     }
 
     /**
@@ -200,9 +191,7 @@ public class MainScreenController implements Initializable {
      @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
     public void addProductButtonPushed(ActionEvent event) throws IOException {
-
-        changeSceneTo(event, "/view/addProduct.fxml");
-
+        SceneChanger.changeSceneTo(event, "addProduct.fxml");
     }
 
     /**
@@ -215,19 +204,19 @@ public class MainScreenController implements Initializable {
      */
     public void modifyProductButtonPushed(ActionEvent event) throws IOException {
         if (!productsTableView.getSelectionModel().isEmpty()) {
-            //store the selected Product from the productsTableView in public static selectedProduct
-            ModifyProductController.selectedProduct = Inventory.lookupProduct(productsTableView.getSelectionModel().getSelectedItem().getId());
+            // store the selected Product from the productsTableView in public static selectedProduct
+            ModifyProductController.selectedProduct = productsTableView.getSelectionModel().getSelectedItem();
 
-            //create FXMLLoader
+            // create FXMLLoader
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/view/modifyProduct.fxml"));
+            loader.setLocation(IMSApplication.class.getResource("modifyProduct.fxml"));
             Parent newScene = loader.load();
 
-            //access the controller from the loader and call initializeFields() method to pass data into fields
+            // access the controller from the loader and call initializeFields() method to pass data into fields
             ModifyProductController controller = loader.getController();
             controller.initializeFields();
 
-            //use part of changeSceneTo() method to switch scenes
+            // set and change scenes
             Scene scene = new Scene(newScene);
 
             // this line gets the stage information
@@ -248,11 +237,9 @@ public class MainScreenController implements Initializable {
      Next, a confirmation dialog is shown to the user, allowing them to Delete the Product or Cancel this action.
      Finally, if the Delete button is pressed, the Product is deleted from the list of Products.
      @param event the ActionEvent object representing the Delete button on the Product's pane being pushed.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
-    public void deleteProductButtonPushed(ActionEvent event) throws IOException {
+    public void deleteProductButtonPushed(ActionEvent event) {
         if (!productsTableView.getSelectionModel().isEmpty()) {
-
             Product productToDelete = productsTableView.getSelectionModel().getSelectedItem();
 
             if (productToDelete.getAllAssociatedParts().isEmpty()) {
@@ -284,8 +271,10 @@ public class MainScreenController implements Initializable {
                 alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
                 alert.setTitle("Error Deleting Product");
                 alert.setHeaderText("Product cannot be deleted.");
-                alert.setContentText("This Product cannot be deleted because it has Parts associated with it.\n"
-                        + "\nTo delete this Product, remove all associated Parts from this Product, then try again.");
+                alert.setContentText("""
+                        This Product cannot be deleted because it has Parts associated with it.
+
+                        To delete this Product, remove all associated Parts from this Product, then try again.""");
                 alert.showAndWait();
             }
 
@@ -303,10 +292,8 @@ public class MainScreenController implements Initializable {
      Once pressed, a dialog will ask for the user to confirm that they would like to exit the application.
      The user may select OK to exit or Cancel to prevent closing the application by mistake.
      @param event the ActionEvent object representing the Exit button being pressed.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
-    public void exitButtonPushed(ActionEvent event) throws IOException {
-
+    public void exitButtonPushed(ActionEvent event) {
         Alert alert = new Alert(AlertType.CONFIRMATION);
         alert.setTitle("Exit IMS");
         alert.setHeaderText("Would you like to close the application?");
@@ -318,41 +305,6 @@ public class MainScreenController implements Initializable {
             stage.close();
         }
 
-    }
-
-    /**
-     This method contains the code required to change scenes using JavaFX.
-     Several different objects are created to change scenes to the FXML file path indicated by the FXMLPath parameter.
-     This method was created to cut down on repetitive code required by many of this program's various methods to change scenes.
-     @param event the ActionEvent object required to change scenes.
-     @param FXMLPath the .fxml file's relative path. This is the scene we are changing to.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
-     */
-    public void changeSceneTo(ActionEvent event, String FXMLPath) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(IMSApplication.class.getResource(FXMLPath));
-        Scene scene = new Scene(fxmlLoader.load());
-
-        // this line gets the stage information
-        Stage window = (Stage) ((Node)event.getSource()).getScene().getWindow();
-
-        window.setScene(scene);
-        window.show();
-    }
-
-    /**
-     This method checks whether a specified String is, or is not, a number.
-     @param s the String this method is checking for whether or not it is a number.
-     @return true Returns true if the specified String s is a number. If s is not a number, returns false.
-     */
-    public boolean isNumber(String s) {
-        //loop through the input String's characters
-        for (int i = 0; i < s.length(); i++) {
-
-            if (Character.isDigit(s.charAt(i)) == false) return false;
-
-        }
-        //returns true only if none of the String's characters are digits
-        return true;
     }
 
     /**
@@ -378,13 +330,13 @@ public class MainScreenController implements Initializable {
 
                 String lowerCaseValue = newValue.toLowerCase(); // toLowerCase of newValue, the input
 
-                if (isNumber(newValue)) {
+                if (Utils.isNumber(newValue)) {
                     Part currentPart = Inventory.lookupPart(part.getId());
 
                     if (String.valueOf(currentPart.getId()).contains(lowerCaseValue))
                         return true; // filter matches partId
 
-                } else if (!isNumber(newValue)) { // newValue is a String
+                } else if (!Utils.isNumber(newValue)) { // newValue is a String
                     ObservableList<Part> partsFound = Inventory.lookupPart(part.getName());
 
                     for (Part foundPart : partsFound) {
@@ -429,13 +381,13 @@ public class MainScreenController implements Initializable {
 
                 String lowerCaseValue = newValue.toLowerCase(); // toLowerCase of newValue, the input
 
-                if (isNumber(newValue)) {
+                if (Utils.isNumber(newValue)) {
                     Product currentProduct = Inventory.lookupProduct(product.getId());
 
                     if (String.valueOf(currentProduct.getId()).contains(lowerCaseValue))
                         return true; // filter matches partId
 
-                } else if (!isNumber(newValue)) { // newValue is a String
+                } else if (!Utils.isNumber(newValue)) { // newValue is a String
                     ObservableList<Product> productsFound = Inventory.lookupProduct(product.getName());
 
                     for (Product foundProduct : productsFound) {

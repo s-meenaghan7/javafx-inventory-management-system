@@ -68,7 +68,7 @@
                 <Label fx:id="priceExceptionText" prefHeight="38.0" prefWidth="230.0" wrapText="true" />
                 <Label fx:id="maxExceptionText" prefHeight="38.0" prefWidth="230.0" wrapText="true" />
                 <Label fx:id="minExceptionText" prefHeight="38.0" prefWidth="230.0" wrapText="true" />
-                <Label fx:id="partTypeExceptionText" prefHeight="38.0" prefWidth="230.0" wrapText="true" />
+                <Label fx:id="partSubclassExceptionText" prefHeight="38.0" prefWidth="230.0" wrapText="true" />
             </children>
         </VBox>
     </children>

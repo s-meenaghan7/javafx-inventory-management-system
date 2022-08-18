@@ -12,13 +12,8 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -26,7 +21,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
+import utils.SceneChanger;
+import utils.Utils;
 
 /**
  FXML Modify Product Screen Controller class.
@@ -49,7 +45,7 @@ public class ModifyProductController implements Initializable {
     @FXML private TableColumn<Part, Double> partCostColumn;
 
     @FXML private Label associatedPartsErrorLabel;
-    @FXML private Button addAssociatedPartButton;
+//    @FXML private Button addAssociatedPartButton;
 
     @FXML private TableView<Part> associatedPartsTableView;
     @FXML private TableColumn<Part, Integer> associatedPartIdColumn;
@@ -64,9 +60,9 @@ public class ModifyProductController implements Initializable {
     @FXML private Label minExceptionText;
 
     @FXML private Label removePartErrorLabel;
-    @FXML private Button removeAssociatedPartButton;
-    @FXML private Button addProductSaveButton;
-    @FXML private Button addProductCancelButton;
+//    @FXML private Button removeAssociatedPartButton;
+//    @FXML private Button addProductSaveButton;
+//    @FXML private Button addProductCancelButton;
 
     public static Product selectedProduct;
 
@@ -78,19 +74,19 @@ public class ModifyProductController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        //set up the columns in Parts TableView
+        // set up the columns in Parts TableView
         partIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         partNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         partInventoryLevelColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
         partCostColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        //set up the columns in the associatedParts TableView
+        // set up the columns in the associatedParts TableView
         associatedPartIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         associatedPartNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         associatedPartInventoryLevelColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
         associatedPartCostColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        //Implement partsSearch functionality
+        // Binds the Products list, tableview, and searchbar together
         FilteredList<Part> filteredParts = new FilteredList<>(Inventory.getAllParts(), p -> true);
         partsSearchHandler(partsTableView, partsSearch, filteredParts);
 
@@ -102,9 +98,8 @@ public class ModifyProductController implements Initializable {
      With a selection made on the Parts TableView, the method checks that the selected Part is not already included in the associated Parts list.
      After passing these checks, the Part is added to the associated Parts list.
      @param event the ActionEvent object representing the Add button for associated Parts on the Add Product screen being pressed.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
-    public void addAssociatedPartButtonPushed(ActionEvent event) throws IOException {
+    public void addAssociatedPartButtonPushed(ActionEvent event) {
         //check if a selection has been made
         if (partsTableView.getSelectionModel().isEmpty()) {
             associatedPartsErrorLabel.setText("Error: No part selected.");
@@ -127,9 +122,8 @@ public class ModifyProductController implements Initializable {
      This method listens for the Remove button on the Modify Product screen being pressed. The method will allow the user to remove an associated Part from the associated Parts list on this screen.
      The method checks that a selection has been made. If so, a confirmation dialog is generated to the user. Selecting the Remove button on this dialog will remove the associated Part from the list.
      @param event the ActionEvent object representing the Remove button for associated Parts on the Add Product screen being pressed.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
      */
-    public void removeAssociatedPartButtonPushed(ActionEvent event) throws IOException {
+    public void removeAssociatedPartButtonPushed(ActionEvent event) {
         // check if a selection has been made
         if (associatedPartsTableView.getSelectionModel().isEmpty()) {
             removePartErrorLabel.setText("Error: No part selected.");
@@ -181,15 +175,13 @@ public class ModifyProductController implements Initializable {
 
         //add the associatedPartsList to the modifiedProduct's associated parts
         ObservableList<Part> associatedPartsList = selectedProduct.getAllAssociatedParts();
-        associatedPartsList.forEach(part -> {
-            modifiedProduct.addAssociatedPart(part);
-        });
+        associatedPartsList.forEach(modifiedProduct::addAssociatedPart);
 
         // remove previous version of this Product, then add the updated version
         Inventory.updateProduct(selectedProduct.getId(), modifiedProduct);
 
         //switch back to mainScreen
-        changeSceneTo(event, "/view/mainScreen.fxml");
+        SceneChanger.changeSceneTo(event, "mainScreen.fxml");
     }
 
     /**
@@ -200,7 +192,7 @@ public class ModifyProductController implements Initializable {
      */
     public void cancelButtonPushed(ActionEvent event) throws IOException {
 
-        changeSceneTo(event, "/view/mainScreen.fxml");
+        SceneChanger.changeSceneTo(event, "mainScreen.fxml");
 
     }
 
@@ -223,50 +215,15 @@ public class ModifyProductController implements Initializable {
     }
 
     /**
-     This method contains the code required to change scenes using JavaFX.
-     Several different objects are created to change scenes to the FXML file path indicated by the FXMLPath parameter.
-     This method was created to cut down on repetitive code required by many of this program's various methods to change scenes.
-     @param event the ActionEvent object required to change scenes.
-     @param FXMLPath the .fxml file's relative path. This is the scene we are changing to.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
-     */
-    public void changeSceneTo(ActionEvent event, String FXMLPath)throws IOException {
-        Parent newScene = FXMLLoader.load(getClass().getResource(FXMLPath));
-        Scene scene = new Scene(newScene);
-
-        // this line gets the stage information
-        Stage window = (Stage) ((Node)event.getSource()).getScene().getWindow();
-
-        window.setScene(scene);
-        window.show();
-    }
-
-    /**
-     This method checks whether a specified String is, or is not, a number.
-     @param s the String this method is checking for whether or not it is a number.
-     @return true Returns true if the specified String s is a number. If s is not a number, returns false.
-     */
-    public boolean isNumber(String s) {
-        //loop through the input String's characters
-        for (int i = 0; i < s.length(); i++) {
-
-            if (Character.isDigit(s.charAt(i)) == false) return false;
-
-        }
-        //returns true only if none of the String's characters are digits
-        return true;
-    }
-
-    /**
      This method validates the user's input on the Add and Modify Product forms.
      The method is called within the button handlers for the Save buttons, on the Add Product and Modify Product forms.
      The method checks each TextField individually, ensuring input is valid. If any of the TextFields input's are invalid, an error message will be displayed to the user and the method will return false.
      @return returns true if there are no error messages present. If any error messages are still present, returns false.
      */
     public boolean validateUserInputProducts() {
-        //check that the productNameTextField is valid input
+        // check that the productNameTextField is valid input
         if (productNameTextField.getText().isBlank() ||
-                isNumber(productNameTextField.getText()) ||
+                Utils.isNumber(productNameTextField.getText()) ||
                 (!productNameTextField.getText().trim().matches("^[a-zA-Z\\s]+$"))) { //spaces only allowed between words
 
             nameExceptionText.setText("Name field input invalid. Numbers and special characters are forbidden.");
@@ -276,7 +233,7 @@ public class ModifyProductController implements Initializable {
         //check that the partStockTextField is valid input
         //should be an int and between the max and min values.
         if (productStockTextField.getText().isBlank() ||
-                (!isNumber(productStockTextField.getText()))) {
+                (!Utils.isNumber(productStockTextField.getText()))) {
 
             stockExceptionText.setText("Inventory field input invalid. Value must be a whole number.");
 
@@ -287,8 +244,8 @@ public class ModifyProductController implements Initializable {
                 if (productMaxTextField.getText().isBlank() || productMinTextField.getText().isBlank()) {
                     stockExceptionText.setText("Inventory field cannot be checked against blank min and/or max fields.");
 
-                } else if ((Integer.valueOf(productStockTextField.getText()) > Integer.valueOf(productMaxTextField.getText())) ||
-                        (Integer.valueOf(productStockTextField.getText()) < Integer.valueOf(productMinTextField.getText()))) {
+                } else if ((Integer.parseInt(productStockTextField.getText()) > Integer.parseInt(productMaxTextField.getText())) ||
+                        (Integer.parseInt(productStockTextField.getText()) < Integer.parseInt(productMinTextField.getText()))) {
 
                     stockExceptionText.setText("Inventory field value must be a number between the min and max field values.");
 
@@ -310,7 +267,7 @@ public class ModifyProductController implements Initializable {
 
         //check the partMaxTextField. Value must be a number, greater than partMinTextField.
         if (productMaxTextField.getText().isBlank() ||
-                (!isNumber(productMaxTextField.getText()))) {
+                (!Utils.isNumber(productMaxTextField.getText()))) {
 
             maxExceptionText.setText("Max field value must be a number. Value must be greater than Min field value.");
 
@@ -318,7 +275,7 @@ public class ModifyProductController implements Initializable {
 
         //check the partMinTextField. Value must be a number, less than partMaxTextField.
         if (productMinTextField.getText().isBlank() ||
-                (!isNumber(productMinTextField.getText()))) {
+                (!Utils.isNumber(productMinTextField.getText()))) {
 
             minExceptionText.setText("Min field value must be a number. Value must be lesser than Max field value.");
 
@@ -355,13 +312,13 @@ public class ModifyProductController implements Initializable {
 
                 String lowerCaseValue = newValue.toLowerCase(); // toLowerCase of newValue, the input
                 // if newValue is a number
-                if (isNumber(newValue)) {
+                if (Utils.isNumber(newValue)) {
                     Part currentPart = Inventory.lookupPart(part.getId());
 
                     if (String.valueOf(currentPart.getId()).contains(lowerCaseValue))
                         return true; // filter matches partId
 
-                } else if (!isNumber(newValue)) { // newValue is a String
+                } else if (!Utils.isNumber(newValue)) { // newValue is a String
                     ObservableList<Part> partsFound = Inventory.lookupPart(part.getName());
 
                     for (Part foundPart : partsFound) {

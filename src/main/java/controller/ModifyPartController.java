@@ -9,17 +9,13 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.stage.Stage;
+import utils.SceneChanger;
+import utils.Utils;
 
 /**
  FXML Modify Part Screen Controller class.
@@ -27,7 +23,7 @@ import javafx.stage.Stage;
  */
 public class ModifyPartController implements Initializable {
 
-    @FXML private ToggleGroup partTypeToggleGroup = new ToggleGroup();
+    @FXML private final ToggleGroup partTypeToggleGroup = new ToggleGroup();
     @FXML private RadioButton inHouseRadioButton;
     @FXML private RadioButton outsourcedRadioButton;
 
@@ -39,8 +35,8 @@ public class ModifyPartController implements Initializable {
     @FXML private TextField partMinTextField;
     @FXML private TextField partTypeField;
 
-    @FXML private Button modifyPartSaveButton;
-    @FXML private Button modifyPartCancelButton;
+//    @FXML private Button modifyPartSaveButton;
+//    @FXML private Button modifyPartCancelButton;
     @FXML private Label partTypeLabel;
 
     @FXML private Label nameExceptionText;
@@ -107,10 +103,10 @@ public class ModifyPartController implements Initializable {
             Inventory.updatePart(selectedPart.getId(), newInHousePart);
 
             //switch back to mainScreen
-            changeSceneTo(event, "/view/mainScreen.fxml");
+            SceneChanger.changeSceneTo(event, "mainScreen.fxml");
         }
 
-        if (this.partTypeToggleGroup.getSelectedToggle().equals(this.outsourcedRadioButton)) {
+        else if (this.partTypeToggleGroup.getSelectedToggle().equals(this.outsourcedRadioButton)) {
             //create new OutsourcedPart, with same ID (not a new one)
             OutsourcedPart newOutsourcedPart = new OutsourcedPart(Integer.parseInt(partIdTextField.getText()),
                     partNameTextField.getText(),
@@ -123,7 +119,7 @@ public class ModifyPartController implements Initializable {
             Inventory.updatePart(newOutsourcedPart.getId(), newOutsourcedPart);
 
             //switch back to mainScreen
-            changeSceneTo(event, "/view/mainScreen.fxml");
+            SceneChanger.changeSceneTo(event, "mainScreen.fxml");
         }
     }
 
@@ -135,24 +131,8 @@ public class ModifyPartController implements Initializable {
      */
     public void cancelButtonPushed(ActionEvent event) throws IOException {
 
-        changeSceneTo(event, "/view/mainScreen.fxml");
+        SceneChanger.changeSceneTo(event, "mainScreen.fxml");
 
-    }
-
-    /**
-     This method checks whether a specified String is, or is not, a number.
-     @param s the String this method is checking for whether or not it is a number.
-     @return true Returns true if the specified String s is a number. If s is not a number, returns false.
-     */
-    public boolean isNumber(String s) {
-        //loop through the input String's characters
-        for (int i = 0; i < s.length(); i++) {
-
-            if (Character.isDigit(s.charAt(i)) == false) return false;
-
-        }
-        //returns true only if none of the String's characters are digits
-        return true;
     }
 
     /**
@@ -164,7 +144,7 @@ public class ModifyPartController implements Initializable {
     public boolean validateUserInputParts() {
         //check that the partNameTextField is valid input
         if (partNameTextField.getText().isBlank() ||
-                isNumber(partNameTextField.getText()) ||
+                Utils.isNumber(partNameTextField.getText()) ||
                 (!partNameTextField.getText().trim().matches("^[a-zA-Z\\s]+$"))) { //spaces only allowed between words
 
             nameExceptionText.setText("Name field input invalid. Numbers and special characters are forbidden.");
@@ -174,7 +154,7 @@ public class ModifyPartController implements Initializable {
         //check that the partStockTextField is valid input
         //should be an int and between the max and min values.
         if (partStockTextField.getText().isBlank() ||
-                (!isNumber(partStockTextField.getText()))) {
+                (!Utils.isNumber(partStockTextField.getText()))) {
 
             stockExceptionText.setText("Inventory field input invalid. Value must be a whole number.");
 
@@ -185,8 +165,8 @@ public class ModifyPartController implements Initializable {
                 if (partMaxTextField.getText().isBlank() || partMinTextField.getText().isBlank()) {
                     stockExceptionText.setText("Inventory field cannot be checked against blank min and/or max fields.");
 
-                } else if ((Integer.valueOf(partStockTextField.getText()) > Integer.valueOf(partMaxTextField.getText())) ||
-                        (Integer.valueOf(partStockTextField.getText()) < Integer.valueOf(partMinTextField.getText()))) {
+                } else if ((Integer.parseInt(partStockTextField.getText()) > Integer.parseInt(partMaxTextField.getText())) ||
+                        (Integer.parseInt(partStockTextField.getText()) < Integer.parseInt(partMinTextField.getText()))) {
 
                     stockExceptionText.setText("Inventory field value must be a number between the min and max field values.");
 
@@ -208,7 +188,7 @@ public class ModifyPartController implements Initializable {
 
         //check the partMaxTextField. Value must be a number, greater than partMinTextField.
         if (partMaxTextField.getText().isBlank() ||
-                (!isNumber(partMaxTextField.getText()))) {
+                (!Utils.isNumber(partMaxTextField.getText()))) {
 
             maxExceptionText.setText("Max field value must be a number. Value must be greater than Min field value.");
 
@@ -216,7 +196,7 @@ public class ModifyPartController implements Initializable {
 
         //check the partMinTextField. Value must be a number, less than partMaxTextField.
         if (partMinTextField.getText().isBlank() ||
-                (!isNumber(partMinTextField.getText()))) {
+                (!Utils.isNumber(partMinTextField.getText()))) {
 
             minExceptionText.setText("Min field value must be a number. Value must be lesser than Max field value.");
 
@@ -225,7 +205,7 @@ public class ModifyPartController implements Initializable {
         //check the partTypeField. If inhouse is selected, value must be int. If Outsourced selected, value must be String.
         if (partTypeToggleGroup.getSelectedToggle().equals(inHouseRadioButton)) {
 
-            if (partTypeField.getText().isBlank() || (!isNumber(partTypeField.getText()))) {
+            if (partTypeField.getText().isBlank() || (!Utils.isNumber(partTypeField.getText()))) {
 
                 partTypeExceptionText.setText("Machine ID field value must be a whole number.");
 
@@ -233,7 +213,7 @@ public class ModifyPartController implements Initializable {
 
         } else if (partTypeToggleGroup.getSelectedToggle().equals(outsourcedRadioButton)) {
 
-            if (partTypeField.getText().isBlank() || isNumber(partTypeField.getText())) {
+            if (partTypeField.getText().isBlank() || Utils.isNumber(partTypeField.getText())) {
 
                 partTypeExceptionText.setText("Company Name field value should not be blank or only contain numbers.");
 
@@ -248,25 +228,6 @@ public class ModifyPartController implements Initializable {
                 maxExceptionText.getText().equals("") &&
                 minExceptionText.getText().equals("") &&
                 partTypeExceptionText.getText().equals("");
-    }
-
-    /**
-     This method contains the code required to change scenes using JavaFX.
-     Several different objects are created to change scenes to the FXML file path indicated by the FXMLPath parameter.
-     This method was created to cut down on repetitive code required by many of this program's various methods to change scenes.
-     @param event the ActionEvent object required to change scenes.
-     @param FXMLPath the .fxml file's relative path. This is the scene we are changing to.
-     @throws IOException the potential IOException that must be caught or declared to be thrown.
-     */
-    public void changeSceneTo(ActionEvent event, String FXMLPath) throws IOException {
-        Parent newScene = FXMLLoader.load(getClass().getResource(FXMLPath));
-        Scene scene = new Scene(newScene);
-
-        // this line gets the stage information
-        Stage window = (Stage) ((Node)event.getSource()).getScene().getWindow();
-
-        window.setScene(scene);
-        window.show();
     }
 
     /**
